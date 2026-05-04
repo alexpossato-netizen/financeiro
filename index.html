@@ -343,8 +343,8 @@ self.addEventListener('fetch', e => {
 <!-- HEADER -->
 <header class="header">
   <div class="header-inner">
-    <div class="header-brand">
-      <img src="data:image/png;base64,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" alt="Logo" class="header-logo">
+    
+      
       <div>
         <h1>Controle Financeiro</h1>
         <p>Alex Possato &middot; Lançamentos, relatórios e exportação</p>
@@ -697,8 +697,8 @@ const EXTRAS_SAI = [29,30,31,32,33];
 //  SUPABASE — banco de dados na nuvem
 //  Substitua os valores abaixo após criar seu projeto em supabase.com
 // ══════════════════════════════════════════════════════════════
-var SB_URL  = 'https://xdnepxhnleciszlgudqq.supabase.co';
-var SB_ANON = 'sb_publishable_yBFSiSw58lV-nHZR1LBcvQ_CpxsuYHo';
+var SB_URL    = 'SUPABASE_URL_AQUI';       // ex: https://xyzxyz.supabase.co
+var SB_ANON   = 'SUPABASE_ANON_KEY_AQUI'; // chave anon/public
 var SB_TABLE  = 'lancamentos';
 var sbSyncing = false;
 var sbFila    = false; // mudança enquanto sync rodava
