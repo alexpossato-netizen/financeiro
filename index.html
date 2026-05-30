@@ -258,6 +258,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--texto);mi
 .bv-status{display:none;align-items:center;gap:10px;padding:10px 14px;background:var(--verde-claro);border:1px solid #c3e4d0;border-radius:10px;margin-bottom:1rem;font-size:0.85rem;font-weight:500;color:var(--verde)}
 .xlsx-badge{display:inline-flex;align-items:center;gap:6px;background:var(--verde-claro);border:1px solid #c3e4d0;border-radius:20px;padding:4px 12px;font-size:0.78rem;font-weight:600;color:var(--verde);margin-left:8px}
 
+.pac-card{background:var(--bg);border:1px solid var(--borda);border-radius:14px;padding:16px;margin-bottom:12px}
+.pac-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px}
+.pac-nome{font-family:'DM Serif Display',serif;font-size:1rem;font-weight:400;color:var(--texto)}
+.pac-desc{font-size:0.8rem;color:var(--muted);margin-top:2px}
+.pac-progress{height:10px;background:var(--borda);border-radius:999px;overflow:hidden;margin-bottom:8px}
+.pac-progress-bar{height:100%;border-radius:999px;background:#7b5ea7;transition:width .4s}
+.pac-valores{display:flex;gap:16px;flex-wrap:wrap;font-size:0.82rem;margin-bottom:12px}
+.pac-val-item{display:flex;flex-direction:column;gap:2px}
+.pac-val-label{color:var(--muted);font-size:0.72rem;text-transform:uppercase;font-weight:600;letter-spacing:0.04em}
+.pac-val-num{font-family:'DM Serif Display',serif;font-size:1rem}
+.pac-parcelas-lista{border-top:1px solid var(--borda);padding-top:10px;margin-top:4px}
+.pac-parcela-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--borda);font-size:0.85rem}
+.pac-parcela-row:last-child{border-bottom:none}
+.pac-parcela-num{color:var(--muted);width:20px;flex-shrink:0;font-size:0.75rem}
+.pac-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--borda);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.pac-check.pago{background:#7b5ea7;border-color:#7b5ea7;color:white}
+.pac-parcela-val{flex:1;color:var(--texto)}
+.pac-parcela-pendente{color:var(--vermelho-medio);font-size:0.75rem}
+.pac-parcela-pago{color:var(--verde);font-size:0.75rem}
+.pac-acoes{display:flex;gap:6px}
 .btn-instalar{display:none;width:100%;padding:13px;background:#1e4d8c;color:white;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all .2s;margin-bottom:10px}
 .btn-instalar:hover{background:#163a6b;transform:translateY(-1px)}
 .sync-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:999;background:var(--verde);color:white;padding:8px 16px;font-size:0.82rem;font-weight:500;text-align:center}
@@ -368,6 +388,7 @@ self.addEventListener('fetch', e => {
     <button class="nav-tab ativo" id="tab-lancar" onclick="irPara('lancar')">&#43; Lançamento</button>
     <button class="nav-tab"       id="tab-painel" onclick="irPara('painel')">&#128200; Painel mensal</button>
     <button class="nav-tab"       id="tab-anual"   onclick="irPara('anual')">&#128197; Anual</button>
+    <button class="nav-tab"       id="tab-pacotes" onclick="irPara('pacotes')">&#128188; Pacotes</button>
     <button class="nav-tab"       id="tab-arquivo" onclick="irPara('arquivo')">&#128190; Arquivo</button>
   </div>
 </nav>
@@ -593,6 +614,47 @@ self.addEventListener('fetch', e => {
 
 </div><!-- /page-arquivo -->
 
+
+<!-- ═══════════════════════════════ PÁGINA: PACOTES ══════════════ -->
+<div class="page" id="page-pacotes">
+
+  <!-- Formulário novo pacote -->
+  <div class="card">
+    <div class="card-titulo"><span class="dot" style="background:#7b5ea7"></span>Novo pacote</div>
+    <div class="fg2" style="margin-bottom:12px">
+      <div class="field">
+        <label>Nome do cliente</label>
+        <input type="text" id="pac-cliente" placeholder="Ex: Maria Silva">
+      </div>
+      <div class="field">
+        <label>Descri&ccedil;&atilde;o</label>
+        <input type="text" id="pac-desc" placeholder="Ex: Jornada Completa 5 sess&otilde;es">
+      </div>
+    </div>
+    <div class="fg2" style="margin-bottom:12px">
+      <div class="field">
+        <label>Valor total (R$)</label>
+        <input type="number" id="pac-total" min="0" step="0.01" placeholder="2000,00">
+      </div>
+      <div class="field">
+        <label>N&uacute;mero de parcelas</label>
+        <input type="number" id="pac-parcelas" min="1" step="1" value="1">
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:14px">
+      <label>Observa&ccedil;&atilde;o (opcional)</label>
+      <input type="text" id="pac-obs" placeholder="Ex: pacote mensal, inicia em maio...">
+    </div>
+    <button class="btn-add btn-add-ent" onclick="adicionarPacote()">+ Criar pacote</button>
+  </div>
+
+  <!-- Lista de pacotes -->
+  <div class="card">
+    <div class="card-titulo"><span class="dot" style="background:#7b5ea7"></span>Pacotes ativos</div>
+    <div id="pac-lista"><div class="vazio-painel">Nenhum pacote cadastrado.</div></div>
+  </div>
+
+</div><!-- /page-pacotes -->
 
 <!-- ═══════════════════════════════ PÁGINA: ANUAL ══════════════ -->
 <div class="page" id="page-anual">
@@ -1290,6 +1352,7 @@ function irPara(pg) {
   document.getElementById('tab-'+pg).classList.add('ativo');
   if (pg === 'painel') renderPainel();
   if (pg === 'anual')   renderAnual();
+  if (pg === 'pacotes') renderPacotes();
   if (pg === 'arquivo') { atualizarStorageInfo(); atualizarGsInfo(); }
 }
 
@@ -1375,6 +1438,10 @@ document.addEventListener('DOMContentLoaded', function init() {
       }
       preencherFiltros();
       renderLista(); atualizarResumo(); gerarScript();
+      // Carrega pacotes
+      sbCarregarPacotes(function(err, lista) {
+        if (!err && lista) { pacotes = lista; renderPacotes(); }
+      });
     });
   });
 
@@ -2232,6 +2299,156 @@ function atualizarGsInfo() {
 
 window.addEventListener('online',  function(){ atualizarGsInfo(); sbSalvar(); });
 window.addEventListener('offline', function(){ atualizarGsInfo(); });
+
+// ══════════════════════════════════════════════════════════════
+//  PACOTES — controle de sessões parceladas
+// ══════════════════════════════════════════════════════════════
+var pacotes = [];
+
+// ── Supabase: carregar pacotes ────────────────────────────────
+function sbCarregarPacotes(cb) {
+  if (SB_URL === 'SUPABASE_URL_AQUI' || !perfilNome) { if(cb) cb(null,[]); return; }
+  var u = encodeURIComponent(perfilNome);
+  fetch(SB_URL + '/rest/v1/pacotes?usuario=eq.' + u + '&order=id.asc', { headers: sbHeaders() })
+  .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+  .then(function(rows){
+    if(cb) cb(null, (rows||[]).map(function(r){
+      return {
+        id: r.id, cliente: r.cliente, descricao: r.descricao,
+        total: parseFloat(r.total)||0, parcelas: parseInt(r.parcelas)||1,
+        pago: parseFloat(r.pago)||0, obs: r.obs||''
+      };
+    }));
+  })
+  .catch(function(e){ if(cb) cb(e,[]); });
+}
+
+function sbSalvarPacotes(cb) {
+  if (SB_URL === 'SUPABASE_URL_AQUI' || !perfilNome) { if(cb) cb(); return; }
+  var rows = pacotes.map(function(p){
+    return { id:p.id, cliente:p.cliente, descricao:p.descricao,
+             total:p.total, parcelas:p.parcelas, pago:p.pago, obs:p.obs||'' };
+  });
+  fetch(SB_URL + '/rest/v1/rpc/sincronizar_pacotes', {
+    method: 'POST', headers: sbHeaders(),
+    body: JSON.stringify({ p_usuario: perfilNome, p_pacotes: rows })
+  })
+  .then(function(r){ if(cb) cb(r.ok ? null : new Error('HTTP '+r.status)); })
+  .catch(function(e){ if(cb) cb(e); });
+}
+
+// ── Adicionar pacote ──────────────────────────────────────────
+function adicionarPacote() {
+  var cliente  = document.getElementById('pac-cliente').value.trim();
+  var desc     = document.getElementById('pac-desc').value.trim();
+  var total    = parseFloat(document.getElementById('pac-total').value);
+  var parcelas = parseInt(document.getElementById('pac-parcelas').value) || 1;
+  var obs      = document.getElementById('pac-obs').value.trim();
+
+  if (!cliente) { document.getElementById('pac-cliente').focus(); return; }
+  if (!desc)    { document.getElementById('pac-desc').focus(); return; }
+  if (!total || total <= 0) { document.getElementById('pac-total').focus(); return; }
+
+  var pac = { id: Date.now(), cliente: cliente, descricao: desc,
+              total: total, parcelas: parcelas, pago: 0, obs: obs };
+  pacotes.push(pac);
+
+  // Limpa formulário
+  document.getElementById('pac-cliente').value  = '';
+  document.getElementById('pac-desc').value     = '';
+  document.getElementById('pac-total').value    = '';
+  document.getElementById('pac-parcelas').value = '1';
+  document.getElementById('pac-obs').value      = '';
+
+  renderPacotes();
+  sbSalvarPacotes(function(err){
+    if(err) toast('Erro ao salvar pacote na nuvem.');
+    else toast('Pacote de ' + cliente + ' criado!');
+  });
+}
+
+// ── Registrar pagamento de parcela ────────────────────────────
+function pagarParcela(pacId, numParcela) {
+  var pac = pacotes.filter(function(p){ return p.id === pacId; })[0];
+  if (!pac) return;
+  var valParcela = pac.total / pac.parcelas;
+  var parcelasPagas = Math.round(pac.pago / valParcela);
+  if (numParcela <= parcelasPagas) {
+    // Estornar pagamento
+    if (!confirm('Estornar parcela ' + numParcela + ' de ' + pac.cliente + '?')) return;
+    pac.pago = Math.max(0, (parcelasPagas - 1) * valParcela);
+  } else {
+    // Registrar pagamento
+    pac.pago = Math.min(pac.total, numParcela * valParcela);
+  }
+  renderPacotes();
+  sbSalvarPacotes(function(err){
+    if(err) toast('Erro ao salvar.');
+  });
+}
+
+// ── Apagar pacote ─────────────────────────────────────────────
+function apagarPacote(pacId) {
+  var pac = pacotes.filter(function(p){ return p.id === pacId; })[0];
+  if (!pac) return;
+  if (!confirm('Apagar pacote de ' + pac.cliente + '?\n\nEssa ação não pode ser desfeita.')) return;
+  pacotes = pacotes.filter(function(p){ return p.id !== pacId; });
+  renderPacotes();
+  sbSalvarPacotes(function(err){
+    if(err) toast('Erro ao apagar na nuvem.');
+    else toast('Pacote apagado.');
+  });
+}
+
+// ── Renderizar lista de pacotes ───────────────────────────────
+function renderPacotes() {
+  var el = document.getElementById('pac-lista');
+  if (!el) return;
+  if (!pacotes.length) {
+    el.innerHTML = '<div class="vazio-painel">Nenhum pacote cadastrado.</div>';
+    return;
+  }
+
+  el.innerHTML = pacotes.map(function(p) {
+    var valParcela   = p.total / p.parcelas;
+    var parcelasPagas = Math.round(p.pago / valParcela);
+    var falta        = p.total - p.pago;
+    var pct          = Math.min(100, Math.round(p.pago / p.total * 100));
+    var corPct       = pct === 100 ? 'var(--verde)' : '#7b5ea7';
+
+    // Parcelas
+    var parcelasHtml = '<div class="pac-parcelas-lista">';
+    for (var i = 1; i <= p.parcelas; i++) {
+      var isPago = i <= parcelasPagas;
+      parcelasHtml += '<div class="pac-parcela-row">'
+        + '<span class="pac-parcela-num">' + i + '</span>'
+        + '<div class="pac-check ' + (isPago ? 'pago' : '') + '" onclick="pagarParcela(' + p.id + ',' + i + ')">'
+        + (isPago ? '&#10003;' : '') + '</div>'
+        + '<span class="pac-parcela-val">' + fmt(valParcela) + '</span>'
+        + '<span class="' + (isPago ? 'pac-parcela-pago' : 'pac-parcela-pendente') + '">'
+        + (isPago ? 'Pago' : 'Pendente') + '</span>'
+        + '</div>';
+    }
+    parcelasHtml += '</div>';
+
+    return '<div class="pac-card">'
+      + '<div class="pac-header">'
+      + '<div><div class="pac-nome">' + esc(p.cliente) + '</div>'
+      + '<div class="pac-desc">' + esc(p.descricao) + (p.obs ? ' &middot; ' + esc(p.obs) : '') + '</div></div>'
+      + '<button class="item-del" onclick="apagarPacote(' + p.id + ')" title="Apagar pacote">&times;</button>'
+      + '</div>'
+      + '<div class="pac-progress"><div class="pac-progress-bar" style="width:' + pct + '%;background:' + corPct + '"></div></div>'
+      + '<div style="text-align:right;font-size:0.72rem;color:var(--muted);margin-bottom:10px">' + pct + '% pago</div>'
+      + '<div class="pac-valores">'
+      + '<div class="pac-val-item"><span class="pac-val-label">Total</span><span class="pac-val-num">' + fmt(p.total) + '</span></div>'
+      + '<div class="pac-val-item"><span class="pac-val-label">Por sess&atilde;o</span><span class="pac-val-num">' + fmt(valParcela) + '</span></div>'
+      + '<div class="pac-val-item"><span class="pac-val-label">Pago</span><span class="pac-val-num" style="color:var(--verde)">' + fmt(p.pago) + '</span></div>'
+      + '<div class="pac-val-item"><span class="pac-val-label">Falta</span><span class="pac-val-num" style="color:' + (falta > 0 ? 'var(--vermelho-medio)' : 'var(--verde)') + '">' + (falta > 0 ? fmt(falta) : 'Quitado &#10003;') + '</span></div>'
+      + '</div>'
+      + parcelasHtml
+      + '</div>';
+  }).join('');
+}
 
 // ══════════════════════════════════════════════════════════════
 //  EDITAR LANÇAMENTO
