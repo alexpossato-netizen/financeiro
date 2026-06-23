@@ -247,14 +247,13 @@
         }
 
         const data = await response.json();
-
-        if (!data || data.length === 0) {
+        // A RPC retorna um objeto diretamente, não um array
+        const resultado = data;
+        if (!resultado || resultado.sucesso === undefined) {
           showError('Usuário não encontrado. Verifique seu email.');
           resetButton(btnLogin, originalText);
           return;
         }
-
-        const resultado = data[0];
 
         if (resultado.sucesso) {
           // ✅ Login bem-sucedido!
