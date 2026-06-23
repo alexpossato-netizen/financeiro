@@ -378,6 +378,7 @@ self.addEventListener('fetch', e => {
       <span id="save-indicator" style="font-size:0.75rem;opacity:0.6;font-weight:300"></span>
       <button class="hbtn" onclick="abrirPerfil()" id="btn-perfil-header" style="display:none"></button>
       <button class="hbtn" onclick="abrirModal()">&#9881; Categorias</button>
+      <button class="hbtn" onclick="logout()" style="color:#d94f4f">🚪 Sair</button>
     </div>
   </div>
 </header>
@@ -888,9 +889,9 @@ function sbHeaders() {
 // ── Carrega todos os lançamentos do usuário atual ─────────────
 function sbCarregar(cb) {
   if (SB_URL === 'SUPABASE_URL_AQUI') { if (cb) cb('não configurado', []); return; }
-  var usuarioId = sessionStorage.getItem('usuario_id'); var usuarioNome = sessionStorage.getItem('usuario_nome');
+  var usuario = encodeURIComponent(perfilNome || 'default');
   var url = SB_URL + '/rest/v1/' + SB_TABLE
-          + '?usuario_id=eq.' + sessionStorage.getItem('usuario_id')
+          + '?usuario=eq.' + usuario
           + '&order=id.asc&limit=2000';
   fetch(url, { headers: sbHeaders() })
     .then(function(r) {
@@ -922,11 +923,11 @@ function sbSalvar(cb) {
   if (sbSyncing) { sbFila = true; if (cb) cb(); return; }
   sbSyncing = true;
   sbStatusSalvando();
-  var usuarioId = sessionStorage.getItem('usuario_id'); var usuario = sessionStorage.getItem('usuario_nome');
+  var usuario = perfilNome || 'default';
   var rows = lancamentos.map(function(l) {
     return {
       id      : l.id,
-      usuario_id: usuarioId, usuario: usuario,
+      usuario : usuario,
       data    : l.data  || '',
       mes     : l.mes   || '',
       tipo    : l.tipo  || 'entrada',
@@ -950,7 +951,7 @@ function sbSalvar(cb) {
   fetch(SB_URL + '/rest/v1/rpc/deletar_lancamentos_usuario', {
     method: 'POST',
     headers: sbHeaders(),
-    body: JSON.stringify({ p_usuario_id: usuarioId })
+    body: JSON.stringify({ p_usuario: usuario })
   })
   .then(function(rDel) {
     if (!rDel.ok) {
@@ -999,8 +1000,8 @@ function sbLimpar(cb) {
   .catch(function(e) {
     console.error('sbLimpar error:', e);
     // Fallback: tenta deletar por usuario
-    var usuarioId = sessionStorage.getItem('usuario_id'); var usuarioNome = sessionStorage.getItem('usuario_nome');
-    fetch(SB_URL + '/rest/v1/' + SB_TABLE + '?usuario_id=eq.' + sessionStorage.getItem('usuario_id'), {
+    var usuario = encodeURIComponent(perfilNome || 'default');
+    fetch(SB_URL + '/rest/v1/' + SB_TABLE + '?usuario=eq.' + usuario, {
       method: 'DELETE',
       headers: sbHeaders()
     })
@@ -1011,9 +1012,9 @@ function sbLimpar(cb) {
 
 // ── Categorias no Supabase via RPC sincronizar_categorias ──────────
 function sbCarregarCategorias(cb) {
-  if (SB_URL === 'SUPABASE_URL_AQUI' || !sessionStorage.getItem('usuario_nome')) { if (cb) cb(null, []); return; }
-  var usuario = sessionStorage.getItem('usuario_id');
-  fetch(SB_URL + '/rest/v1/categorias?usuario_id=eq.' + usuario + '&order=tipo.asc,nome.asc', {
+  if (SB_URL === 'SUPABASE_URL_AQUI' || !perfilNome) { if (cb) cb(null, []); return; }
+  var usuario = encodeURIComponent(perfilNome);
+  fetch(SB_URL + '/rest/v1/categorias?usuario=eq.' + usuario + '&order=tipo.asc,nome.asc', {
     headers: sbHeaders()
   })
   .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
@@ -1023,12 +1024,12 @@ function sbCarregarCategorias(cb) {
 
 // Sincroniza TODAS as categorias de uma vez via RPC (apaga + reinsere com admin)
 function sbSincronizarCategorias(cb) {
-  if (SB_URL === 'SUPABASE_URL_AQUI' || !sessionStorage.getItem('usuario_nome')) { if (cb) cb(); return; }
+  if (SB_URL === 'SUPABASE_URL_AQUI' || !perfilNome) { if (cb) cb(); return; }
   var cats = [];
   entradas.forEach(function(n) { cats.push({ tipo: 'entrada', nome: n }); });
   despesas.forEach(function(n) { cats.push({ tipo: 'saida',   nome: n }); });
   // p_categorias deve ser JSONB — envia como array direto (não como string)
-  var payload = { p_usuario_id: usuarioId, p_categorias: cats };
+  var payload = { p_usuario: perfilNome, p_categorias: cats };
   fetch(SB_URL + '/rest/v1/rpc/sincronizar_categorias', {
     method: 'POST',
     headers: sbHeaders(),
@@ -1101,12 +1102,12 @@ function testarConexao() {
       if (r2.ok) {
         toast('\u2705 Tudo OK! Supabase conectado.');
       } else {
-        alert('ERRO RPC: HTTP ' + r2.status + '\n' + t + '\n\nUsuário: ' + (sessionStorage.getItem('usuario_nome') || '(vazio!)'));
+        alert('ERRO RPC: HTTP ' + r2.status + '\n' + t + '\n\nUsuário: ' + (perfilNome || '(vazio!)'));
       }
     });
   })
   .catch(function(e) {
-    alert('ERRO de rede: ' + e.message + '\n\nURL: ' + SB_URL + '\nUsuário: ' + (sessionStorage.getItem('usuario_nome') || '(vazio!)'));
+    alert('ERRO de rede: ' + e.message + '\n\nURL: ' + SB_URL + '\nUsuário: ' + (perfilNome || '(vazio!)'));
   });
 }
 
@@ -1135,7 +1136,7 @@ var mesPainel   = new Date().getMonth();
 var anoPainel   = new Date().getFullYear();
 var dadosXlsx   = null;
 var nomeArquivo = '';
-var sessionStorage.getItem('usuario_nome')   = '';
+var perfilNome   = '';
 var perfilAvatar = '🌸';
 // Inicializa com padrão
 entradas = (function(){ try { return ENT_PADRAO.slice(); } catch(e){ return []; } })();
@@ -1148,7 +1149,7 @@ var STORAGE_KEY      = 'cf_terapeuta_v1';
 var PERFIL_KEY       = 'cf_perfil_v1';
 
 // Perfil do usuário (nome + avatar)
-var sessionStorage.getItem('usuario_nome')   = '';
+var perfilNome   = '';
 var perfilAvatar = '🌸';
 
 function salvarPerfil() {
@@ -1162,7 +1163,7 @@ function salvarPerfil() {
   }
   var avatar = document.querySelector('.avatar-opt.sel');
   var ico    = avatar ? avatar.getAttribute('data-ico') : '🌸';
-  sessionStorage.getItem('usuario_nome')   = nome;
+  perfilNome   = nome;
   perfilAvatar = ico;
   try { localStorage.setItem(PERFIL_KEY, JSON.stringify({nome:nome, avatar:ico})); } catch(e){}
   aplicarPerfil(nome, ico);
@@ -1225,7 +1226,7 @@ function aplicarPerfil(nome, avatar) {
 function abrirPerfil() {
   // Preenche campos com valores atuais
   var input = document.getElementById('perfil-nome');
-  if (input) input.value = sessionStorage.getItem('usuario_nome');
+  if (input) input.value = perfilNome;
   // Marca avatar atual
   document.querySelectorAll('.avatar-opt').forEach(function(el) {
     el.classList.toggle('sel', el.getAttribute('data-ico') === perfilAvatar);
@@ -1259,15 +1260,15 @@ function salvarEstado() {
     if (ind) ind.textContent = 'salvo ' + fmtDataHora(agora);
     atualizarStorageInfo();
     // Tenta recarregar perfil se não estiver em memória
-    if (!sessionStorage.getItem('usuario_nome')) {
+    if (!perfilNome) {
       var p = carregarPerfil();
-      if (p && p.nome) { sessionStorage.getItem('usuario_nome') = p.nome; perfilAvatar = p.avatar || '\u{1F338}'; }
+      if (p && p.nome) { perfilNome = p.nome; perfilAvatar = p.avatar || '\u{1F338}'; }
     }
-    if (sessionStorage.getItem('usuario_nome')) {
+    if (perfilNome) {
       sbSalvar(function(err) {
         if (err) {
           console.error('Erro Supabase:', err);
-          alert('ERRO SUPABASE:\n' + err.message + '\n\nUsuário: ' + sessionStorage.getItem('usuario_nome'));
+          alert('ERRO SUPABASE:\n' + err.message + '\n\nUsuário: ' + perfilNome);
         }
       });
     }
@@ -1292,7 +1293,7 @@ function atualizarStorageInfo() {
 }
 
 function limparDadosSalvos() {
-  var usuarioId = sessionStorage.getItem('usuario_id'); var usuario = sessionStorage.getItem('usuario_nome');
+  var usuario = perfilNome || 'default';
   if (!confirm('Apagar TODOS os lan\u00e7amentos de "' + usuario + '"?\n\nEssa a\u00e7\u00e3o n\u00e3o pode ser desfeita.')) return;
   // Limpa local imediatamente
   try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
@@ -1359,6 +1360,18 @@ function irPara(pg) {
 // ══════════════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════
+//  LOGOUT
+// ══════════════════════════════════════════════════════════════
+function logout() {
+  if (!confirm('Tem certeza que deseja sair?')) return;
+  sessionStorage.removeItem('usuario_id');
+  sessionStorage.removeItem('usuario_nome');
+  sessionStorage.removeItem('usuario_email');
+  window.location.href = 'index.html';
+}
+
 document.addEventListener('DOMContentLoaded', function init() {
   // ── 1. Restaura estado local (enquanto Sheets carrega) ───────
   var estado = carregarEstado();
@@ -1394,9 +1407,9 @@ document.addEventListener('DOMContentLoaded', function init() {
   // ── 5. Restaura perfil PRIMEIRO (antes de carregar do Supabase) ─
   var perfil = carregarPerfil();
   if (perfil && perfil.nome) {
-    sessionStorage.getItem('usuario_nome')   = perfil.nome;
+    perfilNome   = perfil.nome;
     perfilAvatar = perfil.avatar || '🌸';
-    aplicarPerfil(sessionStorage.getItem('usuario_nome'), perfilAvatar);
+    aplicarPerfil(perfilNome, perfilAvatar);
   }
 
   // ── 6. Renderiza cache local imediatamente (UI rápida) ────────
@@ -1410,7 +1423,7 @@ document.addEventListener('DOMContentLoaded', function init() {
       // Banco tem categorias — usa elas
       aplicarCategoriasDoBanco(catRows);
       preencherCategorias();
-    } else if (!errCat && catRows && catRows.length === 0 && sessionStorage.getItem('usuario_nome')) {
+    } else if (!errCat && catRows && catRows.length === 0 && perfilNome) {
       // Banco vazio — salva as categorias padrão no Supabase automaticamente
       var todasCats = [];
       ENT_PADRAO.forEach(function(n){ todasCats.push({tipo:'entrada', nome:n}); });
@@ -2307,9 +2320,9 @@ var pacotes = [];
 
 // ── Supabase: carregar pacotes ────────────────────────────────
 function sbCarregarPacotes(cb) {
-  if (SB_URL === 'SUPABASE_URL_AQUI' || !sessionStorage.getItem('usuario_nome')) { if(cb) cb(null,[]); return; }
-  var u = sessionStorage.getItem('usuario_id');
-  fetch(SB_URL + '/rest/v1/pacotes?usuario_id=eq.' + u + '&order=id.asc', { headers: sbHeaders() })
+  if (SB_URL === 'SUPABASE_URL_AQUI' || !perfilNome) { if(cb) cb(null,[]); return; }
+  var u = encodeURIComponent(perfilNome);
+  fetch(SB_URL + '/rest/v1/pacotes?usuario=eq.' + u + '&order=id.asc', { headers: sbHeaders() })
   .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
   .then(function(rows){
     if(cb) cb(null, (rows||[]).map(function(r){
@@ -2324,14 +2337,14 @@ function sbCarregarPacotes(cb) {
 }
 
 function sbSalvarPacotes(cb) {
-  if (SB_URL === 'SUPABASE_URL_AQUI' || !sessionStorage.getItem('usuario_nome')) { if(cb) cb(); return; }
+  if (SB_URL === 'SUPABASE_URL_AQUI' || !perfilNome) { if(cb) cb(); return; }
   var rows = pacotes.map(function(p){
     return { id:p.id, cliente:p.cliente, descricao:p.descricao,
              total:p.total, parcelas:p.parcelas, pago:p.pago, obs:p.obs||'' };
   });
   fetch(SB_URL + '/rest/v1/rpc/sincronizar_pacotes', {
     method: 'POST', headers: sbHeaders(),
-    body: JSON.stringify({ p_usuario_id: usuarioId, p_pacotes: rows })
+    body: JSON.stringify({ p_usuario: perfilNome, p_pacotes: rows })
   })
   .then(function(r){ if(cb) cb(r.ok ? null : new Error('HTTP '+r.status)); })
   .catch(function(e){ if(cb) cb(e); });
