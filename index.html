@@ -3,300 +3,202 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - App Financeira</title>
+  <title>Login — Financeiro</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'DM Sans', -apple-system, sans-serif;
+      background: linear-gradient(135deg, #1a6640 0%, #145533 100%);
       min-height: 100vh;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       padding: 20px;
     }
-
-    .login-container {
+    .container {
       background: white;
-      border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
       width: 100%;
       max-width: 400px;
+      padding: 40px;
     }
-
     .logo {
       text-align: center;
       margin-bottom: 30px;
+      font-size: 3rem;
     }
-
-    .logo h1 {
-      font-size: 28px;
-      color: #333;
-      margin-bottom: 8px;
+    h1 {
+      font-size: 1.8rem;
+      color: #1c1a17;
+      margin-bottom: 10px;
+      font-weight: 400;
+      font-family: 'DM Serif Display', serif;
     }
-
-    .logo p {
-      color: #999;
-      font-size: 14px;
+    .subtitle {
+      font-size: 0.875rem;
+      color: #7a7268;
+      margin-bottom: 30px;
     }
-
-    .form-group {
-      margin-bottom: 20px;
+    .field {
+      margin-bottom: 16px;
     }
-
     label {
       display: block;
-      font-size: 14px;
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #7a7268;
+      margin-bottom: 6px;
     }
-
     input {
       width: 100%;
-      padding: 12px 16px;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 14px;
-      transition: border-color 0.3s;
-    }
-
-    input:focus {
+      padding: 12px 14px;
+      border: 1.5px solid #e2ddd5;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      color: #1c1a17;
       outline: none;
-      border-color: #667eea;
+      transition: border-color 0.2s;
     }
-
-    input::placeholder {
-      color: #bbb;
+    input:focus {
+      border-color: #1a6640;
+      background: #f7f5f0;
     }
-
-    .btn-login {
+    input.erro {
+      border-color: #d94f4f;
+    }
+    button {
       width: 100%;
-      padding: 12px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 14px;
+      background: #1a6640;
       color: white;
       border: none;
-      border-radius: 8px;
-      font-size: 16px;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: all 0.2s;
       margin-top: 10px;
     }
-
-    .btn-login:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    button:hover {
+      background: #145533;
+      transform: translateY(-1px);
     }
-
-    .btn-login:active {
+    button:active {
       transform: translateY(0);
     }
-
-    .btn-login:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .error-message {
-      background: #fee;
-      border: 1px solid #fcc;
-      color: #c33;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      font-size: 14px;
+    .erro-msg {
+      color: #d94f4f;
+      font-size: 0.875rem;
+      margin-top: 10px;
       display: none;
     }
-
-    .error-message.show {
+    .erro-msg.show {
       display: block;
-    }
-
-    .loading {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-top: 3px solid white;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-right: 8px;
-      vertical-align: middle;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .demo-users {
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px solid #eee;
-      font-size: 13px;
-      color: #999;
-    }
-
-    .demo-users p {
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
-
-    .demo-users code {
-      background: #f5f5f5;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: 'Courier New', monospace;
-      font-size: 12px;
     }
   </style>
 </head>
 <body>
-  <div class="login-container">
-    <div class="logo">
-      <h1>💰 Financeira</h1>
-      <p>App de Controle Financeiro</p>
-    </div>
 
-    <div class="error-message" id="errorMsg"></div>
+<div class="container">
+  <div class="logo">🌿</div>
+  <h1>Bem-vindo</h1>
+  <p class="subtitle">Controle Financeiro para Terapeutas</p>
 
-    <form id="loginForm" onsubmit="handleLogin(event)">
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input 
-          type="email" 
-          id="email" 
-          placeholder="seu@email.com" 
-          required
-        >
-      </div>
-
-      <div class="form-group">
-        <label for="senha">Senha</label>
-        <input 
-          type="password" 
-          id="senha" 
-          placeholder="Sua senha" 
-          required
-        >
-      </div>
-
-      <button type="submit" class="btn-login" id="btnLogin">
-        Acessar
-      </button>
-    </form>
-
-    <div class="demo-users">
-      <p>👤 Usuários de Teste:</p>
-      <p><code>alex@possato.com</code></p>
-      <p><code>lu@cerqueira.com</code></p>
-    </div>
+  <div class="field">
+    <label>Email</label>
+    <input type="email" id="email" placeholder="ex: alex@example.com" onkeydown="if(event.key==='Enter')login()">
   </div>
 
-  <script>
-    // 🔧 CONFIGURAÇÃO SUPABASE
-    const SUPABASE_URL = 'https://xdnepxhnleciszlgudqq.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_yBFSiSw58lV-nHZR1LBcvQ_CpxsuYHo';
-    const SUPABASE_RPC = 'autenticar_usuario';
+  <div class="field">
+    <label>Senha</label>
+    <input type="password" id="senha" placeholder="sua senha" onkeydown="if(event.key==='Enter')login()">
+  </div>
 
-    // 🔄 Rota da app (após login bem-sucedido)
-    const APP_ROUTE = 'dashboard.html'; // ou 'https://alexpossato-netizen.github.io/financeiro/'
+  <button onclick="login()">Entrar</button>
 
-    async function handleLogin(e) {
-      e.preventDefault();
+  <div class="erro-msg" id="erro-msg"></div>
+</div>
 
-      const email = document.getElementById('email').value.trim();
-      const senha = document.getElementById('senha').value;
-      const errorMsg = document.getElementById('errorMsg');
-      const btnLogin = document.getElementById('btnLogin');
+<script>
+const SB_URL = 'https://xdnepxhnleciszlgudqq.supabase.co';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkbmVweGhubGVjaXN6bGd1ZHFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NDA1MTUsImV4cCI6MjA5MzQxNjUxNX0.p7ztpfdyoFp57VMw_m3XL5WjHuybCDSjR6H_CFgcLGg';
 
-      // Limpar mensagem de erro anterior
-      errorMsg.classList.remove('show');
+function sbHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'apikey': SB_ANON,
+    'Authorization': 'Bearer ' + SB_ANON
+  };
+}
 
-      // Desabilitar botão e mostrar loading
-      btnLogin.disabled = true;
-      const originalText = btnLogin.innerHTML;
-      btnLogin.innerHTML = '<span class="loading"></span>Autenticando...';
+function login() {
+  var email = document.getElementById('email').value.trim();
+  var senha = document.getElementById('senha').value;
+  var erroEl = document.getElementById('erro-msg');
 
-      try {
-        // Fazer RPC call para autenticar
-        const response = await fetch(
-          `${SUPABASE_URL}/rest/v1/rpc/autenticar_usuario`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`
-            },
-            body: JSON.stringify({
-              email_input: email,
-              senha_input: senha
-            })
-          }
-        );
+  if (!email || !senha) {
+    erroEl.textContent = 'Preencha email e senha.';
+    erroEl.classList.add('show');
+    return;
+  }
 
-        if (!response.ok) {
-          throw new Error(`Erro HTTP: ${response.status}`);
-        }
+  erroEl.classList.remove('show');
 
-        const data = await response.json();
-        // A RPC retorna um objeto diretamente, não um array
-        const resultado = data;
-        if (!resultado || resultado.sucesso === undefined) {
-          showError('Usuário não encontrado. Verifique seu email.');
-          resetButton(btnLogin, originalText);
-          return;
-        }
-
-        if (resultado.sucesso) {
-          // ✅ Login bem-sucedido!
-          // Guardar dados na sessão (logout ao fechar aba)
-          sessionStorage.setItem('usuario_id', resultado.usuario_id);
-          sessionStorage.setItem('usuario_nome', resultado.nome);
-          sessionStorage.setItem('usuario_email', email);
-
-          // Redirecionar para app
-          setTimeout(() => {
-            window.location.href = APP_ROUTE;
-          }, 300);
-        } else {
-          // ❌ Credenciais inválidas
-          showError(resultado.mensagem || 'Email ou senha inválidos.');
-          resetButton(btnLogin, originalText);
-        }
-      } catch (error) {
-        console.error('Erro de autenticação:', error);
-        showError(`Erro ao conectar: ${error.message}`);
-        resetButton(btnLogin, originalText);
-      }
+  // Chama RPC autenticar_usuario
+  fetch(SB_URL + '/rest/v1/rpc/autenticar_usuario', {
+    method: 'POST',
+    headers: sbHeaders(),
+    body: JSON.stringify({
+      email_input: email,
+      senha_input: senha
+    })
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  })
+  .then(function(data) {
+    // data = { sucesso, usuario_id, nome, email, mensagem }
+    if (!data || !data.sucesso) {
+      erroEl.textContent = data && data.mensagem ? data.mensagem : 'Email ou senha inválidos.';
+      erroEl.classList.add('show');
+      return;
     }
 
-    function showError(msg) {
-      const errorMsg = document.getElementById('errorMsg');
-      errorMsg.textContent = msg;
-      errorMsg.classList.add('show');
-    }
+    // ✅ IMPORTANTE: Limpar dados locais ANTES de fazer login com novo usuário
+    try {
+      // Limpar TODOS os dados do usuário anterior
+      localStorage.clear(); // Apaga cache local completamente
+      sessionStorage.clear(); // Apaga toda a session anterior
+    } catch(e) {}
 
-    function resetButton(btn, text) {
-      btn.disabled = false;
-      btn.innerHTML = text;
-    }
+    // Salvar dados do novo usuário
+    sessionStorage.setItem('usuario_id', data.usuario_id);
+    sessionStorage.setItem('usuario_nome', data.nome);
+    sessionStorage.setItem('usuario_email', data.email);
 
-    // Desabilitar autofill maluco do navegador
-    document.getElementById('email').addEventListener('autofill', function() {
-      this.style.transition = 'background-color 5000s ease-in-out 0s';
-    });
+    // Redirecionar para dashboard
+    window.location.href = 'dashboard.html';
+  })
+  .catch(function(e) {
+    erroEl.textContent = 'Erro de conexão: ' + e.message;
+    erroEl.classList.add('show');
+    console.error('Login error:', e);
+  });
+}
 
-    document.getElementById('email').addEventListener('blur', function() {
-      this.style.transition = '';
-    });
-  </script>
+// Ao carregar a página, se já estiver logado, vai pro dashboard
+window.addEventListener('DOMContentLoaded', function() {
+  if (sessionStorage.getItem('usuario_id')) {
+    window.location.href = 'dashboard.html';
+  }
+});
+</script>
+
 </body>
 </html>
