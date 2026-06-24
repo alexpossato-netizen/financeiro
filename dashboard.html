@@ -308,6 +308,45 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--texto);mi
 <meta name="apple-mobile-web-app-title" content="Financeiro">
 <link rel="apple-touch-icon" id="pwa-icon">
 <script>
+// ══════════════════════════════════════════════════════════════
+//  CARREGAR ESTADO COM VALIDAÇÃO DE USUÁRIO
+// ══════════════════════════════════════════════════════════════
+function carregarEstadoSeguro() {
+  var usuarioId = sessionStorage.getItem('usuario_id');
+  if (!usuarioId) return null;
+  
+  try {
+    // Chave baseada no usuário
+    var chave = 'cf_user_' + usuarioId.slice(0, 8);
+    var raw = localStorage.getItem(chave);
+    if (!raw) return null;
+    
+    var estado = JSON.parse(raw);
+    // Validação extra: se tem usuario_id salvo, deve bater
+    if (estado.usuarioId && estado.usuarioId !== usuarioId) {
+      console.warn('Dados de usuário diferente detectados! Ignorando cache.');
+      localStorage.removeItem(chave);
+      return null;
+    }
+    return estado;
+  } catch(e) { 
+    return null; 
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════════
+//  LOGOUT
+// ══════════════════════════════════════════════════════════════
+function logout() {
+  if (!confirm('Tem certeza que deseja sair?')) return;
+  sessionStorage.removeItem('usuario_id');
+  sessionStorage.removeItem('usuario_nome');
+  sessionStorage.removeItem('usuario_email');
+  window.location.href = 'index.html';
+}
+
+
 // Injeta manifest dinamicamente (funciona mesmo em arquivo local)
 (function() {
   var manifest = {
@@ -1247,8 +1286,19 @@ function carregarPerfil() {
 
 function salvarEstado() {
   try {
+    var usuarioId = sessionStorage.getItem('usuario_id');
+    var chave = usuarioId ? 'cf_user_' + usuarioId.slice(0, 8) : 'cf_terapeuta_v1';
+    
     var agora = new Date().toISOString();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    localStorage.setItem(chave, JSON.stringify({
+      usuarioId: usuarioId,
+      lancamentos : lancamentos,
+      entradas    : entradas,
+      despesas    : despesas,
+      idCnt       : idCnt,
+      mesPainel   : mesPainel,
+      savedAt     : agora
+    }));
       lancamentos : lancamentos,
       entradas    : entradas,
       despesas    : despesas,
@@ -1278,7 +1328,7 @@ function salvarEstado() {
 function atualizarStorageInfo() {
   var el = document.getElementById('storage-info');
   if (!el) return;
-  var estado = carregarEstado();
+  var estado = carregarEstadoSeguro();
   if (!estado || !estado.savedAt) {
     el.innerHTML = 'Nenhum dado salvo ainda. Os dados são salvos automaticamente a cada lançamento.';
     return;
@@ -1360,41 +1410,9 @@ function irPara(pg) {
 // ══════════════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════════════
-
-// ══════════════════════════════════════════════════════════════
-//  LOGOUT
-// ══════════════════════════════════════════════════════════════
-function logout() {
-  if (!confirm('Tem certeza que deseja sair?')) return;
-  sessionStorage.removeItem('usuario_id');
-  sessionStorage.removeItem('usuario_nome');
-  sessionStorage.removeItem('usuario_email');
-  window.location.href = 'index.html';
-}
-
-
 document.addEventListener('DOMContentLoaded', function init() {
-  // ── VALIDAÇÃO CRÍTICA: Se usuário mudou, limpar TUDO ─────────────
-  var usuarioIdAtual = sessionStorage.getItem('usuario_id');
-  var usuarioIdAnterior = sessionStorage.getItem('ultimo_usuario_id');
-  
-  if (usuarioIdAnterior && usuarioIdAnterior !== usuarioIdAtual) {
-    // Usuário mudou! Limpar dados em memória
-    lancamentos = [];
-    idCnt = 0;
-    entradas = ENT_PADRAO.slice();
-    despesas = SAI_PADRAO.slice();
-    console.log('Usuário mudou de ' + usuarioIdAnterior + ' para ' + usuarioIdAtual + ' — dados limpos');
-  }
-  
-  // Guardar usuário atual para próxima vez
-  if (usuarioIdAtual) {
-    sessionStorage.setItem('ultimo_usuario_id', usuarioIdAtual);
-  }
-
-
   // ── 1. Restaura estado local (enquanto Sheets carrega) ───────
-  var estado = carregarEstado();
+  var estado = carregarEstadoSeguro();
   if (estado) {
     if (Array.isArray(estado.lancamentos)) lancamentos = estado.lancamentos;
     if (Array.isArray(estado.entradas)  && estado.entradas.length)  entradas = estado.entradas;
