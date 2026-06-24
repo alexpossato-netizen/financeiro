@@ -1372,7 +1372,27 @@ function logout() {
   window.location.href = 'index.html';
 }
 
+
 document.addEventListener('DOMContentLoaded', function init() {
+  // ── VALIDAÇÃO CRÍTICA: Se usuário mudou, limpar TUDO ─────────────
+  var usuarioIdAtual = sessionStorage.getItem('usuario_id');
+  var usuarioIdAnterior = sessionStorage.getItem('ultimo_usuario_id');
+  
+  if (usuarioIdAnterior && usuarioIdAnterior !== usuarioIdAtual) {
+    // Usuário mudou! Limpar dados em memória
+    lancamentos = [];
+    idCnt = 0;
+    entradas = ENT_PADRAO.slice();
+    despesas = SAI_PADRAO.slice();
+    console.log('Usuário mudou de ' + usuarioIdAnterior + ' para ' + usuarioIdAtual + ' — dados limpos');
+  }
+  
+  // Guardar usuário atual para próxima vez
+  if (usuarioIdAtual) {
+    sessionStorage.setItem('ultimo_usuario_id', usuarioIdAtual);
+  }
+
+
   // ── 1. Restaura estado local (enquanto Sheets carrega) ───────
   var estado = carregarEstado();
   if (estado) {
