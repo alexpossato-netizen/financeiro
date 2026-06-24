@@ -308,45 +308,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--texto);mi
 <meta name="apple-mobile-web-app-title" content="Financeiro">
 <link rel="apple-touch-icon" id="pwa-icon">
 <script>
-// ══════════════════════════════════════════════════════════════
-//  CARREGAR ESTADO COM VALIDAÇÃO DE USUÁRIO
-// ══════════════════════════════════════════════════════════════
-function carregarEstadoSeguro() {
-  var usuarioId = sessionStorage.getItem('usuario_id');
-  if (!usuarioId) return null;
-  
-  try {
-    // Chave baseada no usuário
-    var chave = 'cf_user_' + usuarioId.slice(0, 8);
-    var raw = localStorage.getItem(chave);
-    if (!raw) return null;
-    
-    var estado = JSON.parse(raw);
-    // Validação extra: se tem usuario_id salvo, deve bater
-    if (estado.usuarioId && estado.usuarioId !== usuarioId) {
-      console.warn('Dados de usuário diferente detectados! Ignorando cache.');
-      localStorage.removeItem(chave);
-      return null;
-    }
-    return estado;
-  } catch(e) { 
-    return null; 
-  }
-}
-
-
-// ══════════════════════════════════════════════════════════════
-//  LOGOUT
-// ══════════════════════════════════════════════════════════════
-function logout() {
-  if (!confirm('Tem certeza que deseja sair?')) return;
-  sessionStorage.removeItem('usuario_id');
-  sessionStorage.removeItem('usuario_nome');
-  sessionStorage.removeItem('usuario_email');
-  window.location.href = 'index.html';
-}
-
-
 // Injeta manifest dinamicamente (funciona mesmo em arquivo local)
 (function() {
   var manifest = {
@@ -1286,19 +1247,8 @@ function carregarPerfil() {
 
 function salvarEstado() {
   try {
-    var usuarioId = sessionStorage.getItem('usuario_id');
-    var chave = usuarioId ? 'cf_user_' + usuarioId.slice(0, 8) : 'cf_terapeuta_v1';
-    
     var agora = new Date().toISOString();
-    localStorage.setItem(chave, JSON.stringify({
-      usuarioId: usuarioId,
-      lancamentos : lancamentos,
-      entradas    : entradas,
-      despesas    : despesas,
-      idCnt       : idCnt,
-      mesPainel   : mesPainel,
-      savedAt     : agora
-    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
       lancamentos : lancamentos,
       entradas    : entradas,
       despesas    : despesas,
@@ -1328,7 +1278,7 @@ function salvarEstado() {
 function atualizarStorageInfo() {
   var el = document.getElementById('storage-info');
   if (!el) return;
-  var estado = carregarEstadoSeguro();
+  var estado = carregarEstado();
   if (!estado || !estado.savedAt) {
     el.innerHTML = 'Nenhum dado salvo ainda. Os dados são salvos automaticamente a cada lançamento.';
     return;
@@ -1410,9 +1360,34 @@ function irPara(pg) {
 // ══════════════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════
+//  LOGOUT
+// ══════════════════════════════════════════════════════════════
+function logout() {
+  if (!confirm('Tem certeza que deseja sair?')) return;
+  sessionStorage.removeItem('usuario_id');
+  sessionStorage.removeItem('usuario_nome');
+  sessionStorage.removeItem('usuario_email');
+  window.location.href = 'index.html';
+}
+
+
 document.addEventListener('DOMContentLoaded', function init() {
+  // Limpar dados em memória se usuário mudou (detecta na mesma aba)
+  var usuarioId = sessionStorage.getItem('usuario_id');
+  var ultimoUsuarioId = sessionStorage.getItem('ultimo_usuario_id_dashboard');
+  if (ultimoUsuarioId && ultimoUsuarioId !== usuarioId) {
+    lancamentos = [];
+    idCnt = 0;
+  }
+  if (usuarioId) {
+    sessionStorage.setItem('ultimo_usuario_id_dashboard', usuarioId);
+  }
+
+
   // ── 1. Restaura estado local (enquanto Sheets carrega) ───────
-  var estado = carregarEstadoSeguro();
+  var estado = carregarEstado();
   if (estado) {
     if (Array.isArray(estado.lancamentos)) lancamentos = estado.lancamentos;
     if (Array.isArray(estado.entradas)  && estado.entradas.length)  entradas = estado.entradas;
