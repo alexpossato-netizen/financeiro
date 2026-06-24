@@ -149,7 +149,6 @@ function login() {
 
   erroEl.classList.remove('show');
 
-  // Chama RPC autenticar_usuario
   fetch(SB_URL + '/rest/v1/rpc/autenticar_usuario', {
     method: 'POST',
     headers: sbHeaders(),
@@ -163,44 +162,26 @@ function login() {
     return r.json();
   })
   .then(function(data) {
-    // data = { sucesso, usuario_id, nome, email, mensagem }
     if (!data || !data.sucesso) {
       erroEl.textContent = data && data.mensagem ? data.mensagem : 'Email ou senha inválidos.';
       erroEl.classList.add('show');
       return;
     }
 
-    // ✅ IMPORTANTE: Limpar APENAS os dados de lançamentos, NÃO o perfil
+    // Limpar localStorage e sessionStorage COMPLETAMENTE
     try {
-      // Lista de chaves que guardam dados de usuário específicos (não perfil)
-      var chavesParaApagar = [
-        'cf_alex_possato_v1',    // dados do Alex
-        'cf_lu_cerqueira_v1',     // dados da Lu
-        'cf_alex_possato_v2',
-        'cf_lu_cerqueira_v2',
-        'cf_terapeuta_v1',        // genérico antigo
-        'cf_',
-      ];
-      
-      // Apagar apenas chaves específicas
-      Object.keys(localStorage).forEach(function(key) {
-        // Se começa com 'cf_' e não é 'cf_perfil', apaga
-        if (key.startsWith('cf_') && key !== 'cf_perfil_v1') {
-          localStorage.removeItem(key);
-        }
-      });
-      
-      // Limpar sessionStorage completamente (é por sessão mesmo)
+      localStorage.clear();
       sessionStorage.clear();
     } catch(e) {}
 
-    // Salvar dados do novo usuário
+    // Salvar novo usuário
     sessionStorage.setItem('usuario_id', data.usuario_id);
     sessionStorage.setItem('usuario_nome', data.nome);
     sessionStorage.setItem('usuario_email', data.email);
 
-    // Redirecionar para dashboard
-    window.location.href = 'dashboard.html';
+    // 🔥 IMPORTANTE: redirecionar COM TIMESTAMP para forçar reload (evita cache)
+    var timestamp = new Date().getTime();
+    window.location.href = 'dashboard.html?t=' + timestamp;
   })
   .catch(function(e) {
     erroEl.textContent = 'Erro de conexão: ' + e.message;
@@ -212,7 +193,8 @@ function login() {
 // Ao carregar a página, se já estiver logado, vai pro dashboard
 window.addEventListener('DOMContentLoaded', function() {
   if (sessionStorage.getItem('usuario_id')) {
-    window.location.href = 'dashboard.html';
+    var timestamp = new Date().getTime();
+    window.location.href = 'dashboard.html?t=' + timestamp;
   }
 });
 </script>
