@@ -308,6 +308,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--texto);mi
 <meta name="apple-mobile-web-app-title" content="Financeiro">
 <link rel="apple-touch-icon" id="pwa-icon">
 <script>
+// ══════════════════════════════════════════════════════════════
+//  LOGOUT
+// ══════════════════════════════════════════════════════════════
+function logout() {
+  if (!confirm('Tem certeza que deseja sair?')) return;
+  sessionStorage.removeItem('usuario_id');
+  sessionStorage.removeItem('usuario_nome');
+  sessionStorage.removeItem('usuario_email');
+  window.location.href = 'index.html';
+}
+
+
 // Injeta manifest dinamicamente (funciona mesmo em arquivo local)
 (function() {
   var manifest = {
@@ -1145,7 +1157,7 @@ despesas = (function(){ try { return SAI_PADRAO.slice(); } catch(e){ return []; 
 // ══════════════════════════════════════════════════════════════
 //  PERSISTÊNCIA — localStorage
 // ══════════════════════════════════════════════════════════════
-var STORAGE_KEY      = 'cf_terapeuta_v1';
+var STORAGE_KEY      = ''; // Será definida no init com usuario_id
 var PERFIL_KEY       = 'cf_perfil_v1';
 
 // Perfil do usuário (nome + avatar)
@@ -1248,9 +1260,7 @@ function carregarPerfil() {
 function salvarEstado() {
   try {
     var agora = new Date().toISOString();
-    var usuarioId = sessionStorage.getItem('usuario_id');
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      usuarioId: usuarioId,
       lancamentos : lancamentos,
       entradas    : entradas,
       despesas    : despesas,
@@ -1339,15 +1349,7 @@ function carregarEstado() {
   try {
     var raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    var estado = JSON.parse(raw);
-    
-    // VALIDAÇÃO: se tem usuario_id salvo, deve bater com sessionStorage
-    var usuarioIdAtual = sessionStorage.getItem('usuario_id');
-    if (usuarioIdAtual && estado.usuarioId && estado.usuarioId !== usuarioIdAtual) {
-      console.warn('Dados de usuário diferente! Ignorando cache.');
-      return null;
-    }
-    return estado;
+    return JSON.parse(raw);
   } catch(e) { return null; }
 }
 
@@ -1370,19 +1372,12 @@ function irPara(pg) {
 // ══════════════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════════════
-
-// ══════════════════════════════════════════════════════════════
-//  LOGOUT
-// ══════════════════════════════════════════════════════════════
-function logout() {
-  if (!confirm('Tem certeza que deseja sair?')) return;
-  sessionStorage.removeItem('usuario_id');
-  sessionStorage.removeItem('usuario_nome');
-  sessionStorage.removeItem('usuario_email');
-  window.location.href = 'index.html';
-}
-
 document.addEventListener('DOMContentLoaded', function init() {
+  // ── 0. DEFINIR STORAGE_KEY COM USUARIO_ID ─────────────────
+  var usuarioId = sessionStorage.getItem('usuario_id');
+  STORAGE_KEY = usuarioId ? 'cf_user_' + usuarioId.slice(0, 8) + '_v1' : 'cf_terapeuta_v1';
+
+
   // ── 1. Restaura estado local (enquanto Sheets carrega) ───────
   var estado = carregarEstado();
   if (estado) {
